@@ -2,6 +2,8 @@ import os
 import tensorflow as tf
 from datetime import datetime
 
+# noinspection PyPep8Naming
+import TensorFlow_utils as tf_utils
 from dataset import Dataset
 from cycle_gan import cycleGAN
 
@@ -18,8 +20,8 @@ class Solver(object):
 
         self._make_folders()
 
-        # self.sess.run(tf.global_variables_initializer())
-        # tf_utils.show_all_variables()
+        self.sess.run(tf.global_variables_initializer())
+        tf_utils.show_all_variables()
 
     def _make_folders(self):
         if self.flags.is_train:  # train stage
