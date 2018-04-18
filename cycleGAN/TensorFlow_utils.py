@@ -173,6 +173,14 @@ def max_pool_2x2(x, name='max_pool'):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
+def sigmoid(x, name='sigmoid', is_print=False):
+    output = tf.nn.sigmoid(x, name=name)
+    if is_print:
+        print_activations(output)
+
+    return output
+
+
 def tanh(x, name='tanh', is_print=False):
     output = tf.nn.tanh(x, name=name)
     if is_print:
@@ -189,8 +197,12 @@ def relu(x, name='relu', is_print=False):
     return output
 
 
-def lrelu(x, leak=0.2, name='lrelu'):
-    return tf.maximum(x, leak*x, name=name)
+def lrelu(x, leak=0.2, name='lrelu', is_print=False):
+    output = tf.maximum(x, leak*x, name=name)
+    if is_print:
+        print_activations(output)
+
+    return output
 
 
 def xavier_init(in_dim):

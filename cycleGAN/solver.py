@@ -21,7 +21,7 @@ class Solver(object):
         self._make_folders()
 
         self.sess.run(tf.global_variables_initializer())
-        tf_utils.show_all_variables()
+        # tf_utils.show_all_variables()
 
     def _make_folders(self):
         if self.flags.is_train:  # train stage
@@ -43,8 +43,8 @@ class Solver(object):
 
     @staticmethod
     def train():
-        print('hello train!')
+        print('hello solver TRAIN function!')
 
     @staticmethod
     def test():
-        print('hello test!')
+        print('hello solver TEST function!')
