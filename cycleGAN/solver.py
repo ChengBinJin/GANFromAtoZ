@@ -43,7 +43,21 @@ class Solver(object):
 
     @staticmethod
     def train():
-        print('hello solver TRAIN function!')
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners
+
+        try:
+            print('star!')
+
+        except KeyboardInterrupt:
+            coord.request_stop()
+        except Exception as e:
+            coord.request_stop(e)
+        finally:
+            # when done, ask the threads to stop
+            coord.request_stop()
+            coord.join(threads)
+
 
     @staticmethod
     def test():

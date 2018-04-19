@@ -4,6 +4,7 @@ import scipy.misc
 
 # noinspection PyPep8Naming
 import TensorFlow_utils as tf_utils
+import utils as utils
 from reader import Reader
 
 
@@ -47,30 +48,34 @@ class cycleGAN(object):
 
         x_reader = Reader(self.x_path, name='X', image_size=self.image_size, batch_size=self.flags.batch_size)
         y_reader = Reader(self.y_path, name='Y', image_size=self.image_size, batch_size=self.flags.batch_size)
-        x_imgs = x_reader.feed()
-        y_imgs = y_reader.feed()
+        self.x_imgs = x_reader.feed()
+        self.y_imgs = y_reader.feed()
 
-        cycle_loss = self.cycle_consistency_loss(x_imgs, y_imgs)
+        self.fake_x_pool_obj = utils.ImagePool(pool_size=50)
+        self.fake_y_pool_obj = utils.ImagePool(pool_size=50)
+
+        # cycle consistency loss
+        cycle_loss = self.cycle_consistency_loss(self.x_imgs, self.y_imgs)
 
         # X -> Y
-        fake_y_imgs = self.G_gen(x_imgs)
-        G_gen_loss = self.generator_loss(self.Dy_dis, fake_y_imgs, use_lsgan=self.use_lsgan)
+        self.fake_y_imgs = self.G_gen(self.x_imgs)
+        G_gen_loss = self.generator_loss(self.Dy_dis, self.fake_y_imgs, use_lsgan=self.use_lsgan)
         G_loss = G_gen_loss + cycle_loss
-        Dy_dis_loss = self.discriminator_loss(self.Dy_dis, y_imgs, fake_y_imgs, use_lsgan=self.use_lsgan)
+        Dy_dis_loss = self.discriminator_loss(self.Dy_dis, self.y_imgs, self.fake_y_imgs,
+                                              use_lsgan=self.use_lsgan)
 
         # Y -> X
-        fake_x_imgs = self.F_gen(y_imgs)
-        F_gen_loss = self.generator_loss(self.Dx_dis, fake_x_imgs, use_lsgan=self.use_lsgan)
+        self.fake_x_imgs = self.F_gen(self.y_imgs)
+        F_gen_loss = self.generator_loss(self.Dx_dis, self.fake_x_imgs, use_lsgan=self.use_lsgan)
         F_loss = F_gen_loss + cycle_loss
-        Dx_dis_loss = self.discriminator_loss(self.Dx_dis, x_imgs, fake_x_imgs, use_lsgan=self.use_lsgan)
+        Dx_dis_loss = self.discriminator_loss(self.Dx_dis, self.x_imgs, self.fake_x_imgs,
+                                              use_lsgan=self.use_lsgan)
 
         G_optim = self.optimizer(loss=G_loss, variables=self.G_gen.variables, name='G_optim')
         Dy_optim = self.optimizer(loss=Dy_dis_loss, variables=self.Dy_dis.variables, name='Dy_optim')
         F_optim = self.optimizer(loss=F_loss, variables=self.F_gen.variables, name='F_optim')
         Dx_optim = self.optimizer(loss=Dx_dis_loss, variables=self.Dx_dis.variables, name='Dy_optim')
-
-        # with tf.control_dependencies([G_optim, Dy_optim, F_optim, Dx_optim]):
-        #     return tf.no_op(name='optimizers')
+        self.optimizer = tf.group([G_optim, Dy_optim, F_optim, Dx_optim])
 
     def optimizer(self, loss, variables, name='optim'):
         global_step = tf.get_variable('global_step', 0, trainable=False)
@@ -130,7 +135,9 @@ class cycleGAN(object):
     #     print('hello discriminator!')
 
     def train_step(self):
-        print('hello train_step!')
+        fake_y_val, fake_x_val, x_val, y_val = self.sess.run([self.fake_y_imgs, self.fake_x_imgs,
+                                                              self.x_imgs, self.y_imgs])
+
 
     def write_tensorboard(self):
         print('hello write_tensorboard!')
