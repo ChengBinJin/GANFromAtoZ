@@ -1,9 +1,13 @@
 import os
+import cv2
+import collections
+import numpy as np
 import tensorflow as tf
 from datetime import datetime
 
 # noinspection PyPep8Naming
 import TensorFlow_utils as tf_utils
+import utils as utils
 from dataset import Dataset
 from cycle_gan import cycleGAN
 
@@ -21,7 +25,7 @@ class Solver(object):
         self._make_folders()
 
         self.sess.run(tf.global_variables_initializer())
-        # tf_utils.show_all_variables()
+        tf_utils.show_all_variables()
 
     def _make_folders(self):
         if self.flags.is_train:  # train stage
@@ -41,13 +45,16 @@ class Solver(object):
             if not os.path.isdir(self.test_out_dir):
                 os.makedirs(self.test_out_dir)
 
-    @staticmethod
-    def train():
+    def train(self):
         coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners
+        threads = tf.train.start_queue_runners(sess=self.sess, coord=coord)
 
         try:
-            print('star!')
+            for iter_time in range(self.flags.iters):
+                self.sample(iter_time)  # sampling images and save them
+
+                loss = self.model.train_step()
+                self.print_info(iter_time, loss)
 
         except KeyboardInterrupt:
             coord.request_stop()
@@ -57,6 +64,20 @@ class Solver(object):
             # when done, ask the threads to stop
             coord.request_stop()
             coord.join(threads)
+
+    def sample(self, iter_time):
+        if np.mod(iter_time, self.flags.sample_freq) == 0:
+            imgs = self.model.sample_imgs()
+            utils.plots(imgs, iter_time, self.dataset.image_size, self.sample_out_dir)
+
+    def print_info(self, iter_time, loss):
+        if np.mod(iter_time, self.flags.print_freq) == 0:
+            ord_output = collections.OrderedDict([('G_loss', loss[0]), ('Dy_loss', loss[1]),
+                                                  ('F_loss', loss[2]), ('Dx_loss', loss[3]),
+                                                  ('dataset', self.dataset.name),
+                                                  ('gpu_index', self.flags.gpu_index)])
+
+            utils.print_metrics(iter_time, ord_output)
 
 
     @staticmethod

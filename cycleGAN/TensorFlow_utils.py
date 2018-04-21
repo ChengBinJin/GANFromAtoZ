@@ -35,7 +35,8 @@ def deconv2d(x, k, k_h=3, k_w=3, d_h=2, d_w=2, stddev=0.02, padding_='SAME', out
         h_output, w_output = None, None
         if not output_size:
             h_output, w_output = input_shape[1] * 2, input_shape[2] * 2
-        output_shape = [input_shape[0], h_output, w_output, k]
+        # output_shape = [input_shape[0], h_output, w_output, k]  # error when not define batch_size
+        output_shape = [tf.shape(x)[0], h_output, w_output, k]
 
         # conv2d transpose
         w = tf.get_variable('w', [k_h, k_w, k, input_shape[3]],

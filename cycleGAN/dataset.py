@@ -1,6 +1,7 @@
 class Day2Night(object):
     def __init__(self, flags):
         self.flags = flags
+        self.name = 'day2night'
         self.image_size = (128, 256, 3)
 
         self.day_path = '../data/tfrecords/day.tfrecords'

@@ -38,6 +38,8 @@ class cycleGAN(object):
         # tfph: TensorFlow PlaceHolder
         self.x_test_tfph = tf.placeholder(tf.float32, shape=[None, *self.image_size], name='x_test_tfph')
         self.y_test_tfph = tf.placeholder(tf.float32, shape=[None, *self.image_size], name='y_test_tfph')
+        self.fake_x_tfph = tf.placeholder(tf.float32, shape=[None, *self.image_size], name='fake_x_tfph')
+        self.fake_y_tfph = tf.placeholder(tf.float32, shape=[None, *self.image_size], name='fake_y_tfph')
 
         self.G_gen = Generator(name='G', ngf=self.ngf, norm=self.norm, image_size=self.image_size,
                                _ops=self._G_gen_train_ops)
@@ -60,25 +62,29 @@ class cycleGAN(object):
         # X -> Y
         self.fake_y_imgs = self.G_gen(self.x_imgs)
         G_gen_loss = self.generator_loss(self.Dy_dis, self.fake_y_imgs, use_lsgan=self.use_lsgan)
-        G_loss = G_gen_loss + cycle_loss
-        Dy_dis_loss = self.discriminator_loss(self.Dy_dis, self.y_imgs, self.fake_y_imgs,
-                                              use_lsgan=self.use_lsgan)
+        self.G_loss = G_gen_loss + cycle_loss
+        self.Dy_dis_loss = self.discriminator_loss(self.Dy_dis, self.y_imgs, self.fake_y_tfph,
+                                                   use_lsgan=self.use_lsgan)
 
         # Y -> X
         self.fake_x_imgs = self.F_gen(self.y_imgs)
         F_gen_loss = self.generator_loss(self.Dx_dis, self.fake_x_imgs, use_lsgan=self.use_lsgan)
-        F_loss = F_gen_loss + cycle_loss
-        Dx_dis_loss = self.discriminator_loss(self.Dx_dis, self.x_imgs, self.fake_x_imgs,
-                                              use_lsgan=self.use_lsgan)
+        self.F_loss = F_gen_loss + cycle_loss
+        self.Dx_dis_loss = self.discriminator_loss(self.Dx_dis, self.x_imgs, self.fake_x_tfph,
+                                                   use_lsgan=self.use_lsgan)
 
-        G_optim = self.optimizer(loss=G_loss, variables=self.G_gen.variables, name='G_optim')
-        Dy_optim = self.optimizer(loss=Dy_dis_loss, variables=self.Dy_dis.variables, name='Dy_optim')
-        F_optim = self.optimizer(loss=F_loss, variables=self.F_gen.variables, name='F_optim')
-        Dx_optim = self.optimizer(loss=Dx_dis_loss, variables=self.Dx_dis.variables, name='Dy_optim')
-        self.optimizer = tf.group([G_optim, Dy_optim, F_optim, Dx_optim])
+        G_optim = self.optimizer(loss=self.G_loss, variables=self.G_gen.variables, name='G_optim')
+        Dy_optim = self.optimizer(loss=self.Dy_dis_loss, variables=self.Dy_dis.variables, name='Dy_optim')
+        F_optim = self.optimizer(loss=self.F_loss, variables=self.F_gen.variables, name='F_optim')
+        Dx_optim = self.optimizer(loss=self.Dx_dis_loss, variables=self.Dx_dis.variables, name='Dy_optim')
+        self.optims = tf.group([G_optim, Dy_optim, F_optim, Dx_optim])
+
+        # for sampling function
+        self.fake_y_sample = self.G_gen(self.x_test_tfph)
+        self.fake_x_sample = self.F_gen(self.y_test_tfph)
 
     def optimizer(self, loss, variables, name='optim'):
-        global_step = tf.get_variable('global_step', 0, trainable=False)
+        global_step = tf.Variable(0, trainable=False)
         starter_learning_rate = self.flags.learning_rate
         end_learning_rate = 0.
         start_decay_step = self.start_dcay_step
@@ -87,7 +93,7 @@ class cycleGAN(object):
         learning_rate = (tf.where(tf.greater_equal(global_step, start_decay_step),
                                   tf.train.polynomial_decay(starter_learning_rate,
                                                             global_step - start_decay_step,
-                                                            decay_steps, end_learning_rate),
+                                                            decay_steps, end_learning_rate, power=1.0),
                                   starter_learning_rate))
 
         learn_step = tf.train.AdamOptimizer(learning_rate, beta1=self.flags.beta1, name=name).\
@@ -137,7 +143,19 @@ class cycleGAN(object):
     def train_step(self):
         fake_y_val, fake_x_val, x_val, y_val = self.sess.run([self.fake_y_imgs, self.fake_x_imgs,
                                                               self.x_imgs, self.y_imgs])
+        _, G_loss, Dy_loss, F_loss, Dx_loss = \
+            self.sess.run([self.optims, self.G_loss, self.Dy_dis_loss, self.F_loss, self.Dx_dis_loss],
+                          feed_dict={self.fake_x_tfph: self.fake_x_pool_obj.query(fake_x_val),
+                                     self.fake_y_tfph: self.fake_y_pool_obj.query(fake_y_val)})
 
+        return [G_loss, Dy_loss, F_loss, Dx_loss]
+
+    def sample_imgs(self):
+        x_val, y_val = self.sess.run([self.x_imgs, self.y_imgs])
+        fake_y, fake_x = self.sess.run([self.fake_y_sample, self.fake_x_sample],
+                                       feed_dict={self.x_test_tfph: x_val, self.y_test_tfph: y_val})
+
+        return [x_val, fake_y, y_val, fake_x]
 
     def write_tensorboard(self):
         print('hello write_tensorboard!')
@@ -196,7 +214,7 @@ class Generator(object):
             # (N, H, W, 32) -> (N, H, W, 3)
             conv6 = tf_utils.padding2d(conv5, p_h=3, p_w=3, pad_type='REFLECT', name='output_padding')
             conv6 = tf_utils.conv2d(conv6, self.image_size[2], k_h=7, k_w=7, d_h=1, d_w=1,
-                                     padding='VALID', name='output_conv')
+                                    padding='VALID', name='output_conv')
             output = tf_utils.tanh(conv6, name='output_tanh', is_print=True)
 
             # set reuse=True for next call
