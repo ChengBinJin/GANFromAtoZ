@@ -4,11 +4,15 @@ class Day2Night(object):
         self.name = 'day2night'
         self.image_size = (128, 256, 3)
 
-        self.day_path = '../data/tfrecords/day.tfrecords'
-        self.night_path = '../data/tfrecords/night.tfrecords'
+        self.day_path = '../data/ICVL/day/'
+        self.night_path = '../data/ICVL/night/'
+
+        # tfrecord path
+        self.day_tfpath = '../data/tfrecords/day.tfrecords'
+        self.night_tfpath = '../data/tfrecords/night.tfrecords'
 
     def __call__(self):
-        return [self.day_path, self.night_path]
+        return [self.day_tfpath, self.night_tfpath]
 
 
 # noinspection PyPep8Naming

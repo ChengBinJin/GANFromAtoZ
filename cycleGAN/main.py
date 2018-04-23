@@ -11,10 +11,10 @@ tf.flags.DEFINE_bool('is_train', True, 'default: True')
 
 tf.flags.DEFINE_float('learning_rate', 2e-4, 'initial leraning rate for Adam, default: 0.0002')
 tf.flags.DEFINE_float('beta1', 0.5, 'momentum term of Adam, default: 0.5')
-tf.flags.DEFINE_integer('iters', 20, 'number of iterations, default: 200000')
-tf.flags.DEFINE_integer('print_freq', 1, 'print frequency, default: 100')
-tf.flags.DEFINE_integer('save_freq', 10, 'save frequency, default: 500')
-tf.flags.DEFINE_integer('sample_freq', 2, 'sample frequency, default: 200')
+tf.flags.DEFINE_integer('iters', 200000, 'number of iterations, default: 200000')
+tf.flags.DEFINE_integer('print_freq', 100, 'print frequency, default: 100')
+tf.flags.DEFINE_integer('save_freq', 500, 'save frequency, default: 500')
+tf.flags.DEFINE_integer('sample_freq', 200, 'sample frequency, default: 200')
 tf.flags.DEFINE_string('load_model', None, 'folder of saved model that you wish to continue training '
                                            '(e.g. 20180412-1610), default: None')
 

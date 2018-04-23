@@ -1,0 +1,7 @@
+data/
+cycleGAN/.idea/
+cycleGAN/__pycache__
+cycleGAN/day2night
+cycleGAN/_*.*
+cycleGAN/backup/
+cycleGAN/video2frame.py

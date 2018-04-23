@@ -1,6 +1,8 @@
 import os
 import sys
 import random
+import numpy as np
+from PIL import Image
 
 
 class ImagePool(object):
@@ -46,12 +48,39 @@ def all_files_under(path, extension=None, append_path=True, sort=True):
     return filenames
 
 
+def imagefiles2arrs(filenames):
+    img_shape = image_shape(filenames[0])
+    images_arr = None
+
+    if len(img_shape) == 3:  # color image
+        images_arr = np.zeros((len(filenames), img_shape[0], img_shape[1], img_shape[2]), dtype=np.float32)
+    elif len(img_shape) == 2:  # gray scale image
+        images_arr = np.zeros((len(filenames), img_shape[0], img_shape[1]), dtype=np.float32)
+
+    for file_index in range(len(filenames)):
+        img = Image.open(filenames[file_index])
+        images_arr[file_index] = np.asarray(img).astype(np.float32)
+
+    return images_arr
+
+
+def image_shape(filename):
+    img = Image.open(filename, mode="r")
+    img_arr = np.asarray(img)
+    img_shape = img_arr.shape
+    return img_shape
+
+
 def print_metrics(itr, kargs):
     print("*** Iteration {}  ====> ".format(itr))
     for name, value in kargs.items():
         print("{} : {}, ".format(name, value))
     print("")
     sys.stdout.flush()
+
+
+def transform(img):
+    return img / 127.5 - 1.0
 
 
 def inverse_transform(img):

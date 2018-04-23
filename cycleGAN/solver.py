@@ -1,5 +1,6 @@
 import os
-import cv2
+import time
+# import cv2
 import collections
 import numpy as np
 import tensorflow as tf
@@ -98,7 +99,22 @@ class Solver(object):
         else:
             print(' [!] Load Failed...')
 
-        print('hello solver TEST function!')
+        # read test data
+        test_data_files = utils.all_files_under(self.dataset.night_path)
+        total_time = 0.
+
+        for idx in range(len(test_data_files)):
+            img = utils.imagefiles2arrs([test_data_files[idx]])  # read img
+            img = utils.transform(img)  # convert [0, 255] to [-1., 1.]
+
+            # measure inference time
+            start_time = time.time()
+            imgs = self.model.test_step(img, mode='YtoX')  # inference
+            total_time += time.time() - start_time
+
+            self.model.plots(imgs, idx, self.dataset.image_size, self.test_out_dir)  # write results
+
+        print('Avg PT: {:3f} msec.'.format(total_time / len(test_data_files) * 1000.))
 
     def sample(self):
         if np.mod(self.iter_time, self.flags.sample_freq) == 0:

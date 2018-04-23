@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import tensorflow as tf
 
-import cv2
-import scipy.misc
+# import cv2
+# import scipy.misc
 
 # noinspection PyPep8Naming
 import TensorFlow_utils as tf_utils
@@ -171,6 +171,16 @@ class cycleGAN(object):
                                        feed_dict={self.x_test_tfph: x_val, self.y_test_tfph: y_val})
 
         return [x_val, fake_y, y_val, fake_x]
+
+    def test_step(self, img, mode='XtoY'):
+        if mode == 'XtoY':
+            fake_y = self.sess.run(self.fake_y_sample, feed_dict={self.x_test_tfph: img})
+            return [img, fake_y]
+        elif mode == 'YtoX':
+            fake_x = self.sess.run(self.fake_x_sample, feed_dict={self.y_test_tfph: img})
+            return [img, fake_x]
+        else:
+            raise NotImplementedError
 
     @staticmethod
     def plots(imgs, iter_time, image_size, save_file):
