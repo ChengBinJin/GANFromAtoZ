@@ -1,4 +1,7 @@
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import tensorflow as tf
+
 import cv2
 import scipy.misc
 
@@ -33,6 +36,7 @@ class cycleGAN(object):
         self._Dy_dis_train_ops, self._Dx_dis_train_ops = [], []
 
         self._build_net()
+        self._tensorboard()
 
     def _build_net(self):
         # tfph: TensorFlow PlaceHolder
@@ -61,29 +65,29 @@ class cycleGAN(object):
 
         # X -> Y
         self.fake_y_imgs = self.G_gen(self.x_imgs)
-        G_gen_loss = self.generator_loss(self.Dy_dis, self.fake_y_imgs, use_lsgan=self.use_lsgan)
-        self.G_loss = G_gen_loss + cycle_loss
+        self.G_gen_loss = self.generator_loss(self.Dy_dis, self.fake_y_imgs, use_lsgan=self.use_lsgan)
+        self.G_loss = self.G_gen_loss + cycle_loss
         self.Dy_dis_loss = self.discriminator_loss(self.Dy_dis, self.y_imgs, self.fake_y_tfph,
                                                    use_lsgan=self.use_lsgan)
 
         # Y -> X
         self.fake_x_imgs = self.F_gen(self.y_imgs)
-        F_gen_loss = self.generator_loss(self.Dx_dis, self.fake_x_imgs, use_lsgan=self.use_lsgan)
-        self.F_loss = F_gen_loss + cycle_loss
+        self.F_gen_loss = self.generator_loss(self.Dx_dis, self.fake_x_imgs, use_lsgan=self.use_lsgan)
+        self.F_loss = self.F_gen_loss + cycle_loss
         self.Dx_dis_loss = self.discriminator_loss(self.Dx_dis, self.x_imgs, self.fake_x_tfph,
                                                    use_lsgan=self.use_lsgan)
 
-        G_optim = self.optimizer(loss=self.G_loss, variables=self.G_gen.variables, name='G_optim')
-        Dy_optim = self.optimizer(loss=self.Dy_dis_loss, variables=self.Dy_dis.variables, name='Dy_optim')
-        F_optim = self.optimizer(loss=self.F_loss, variables=self.F_gen.variables, name='F_optim')
-        Dx_optim = self.optimizer(loss=self.Dx_dis_loss, variables=self.Dx_dis.variables, name='Dy_optim')
+        G_optim = self.optimizer(loss=self.G_loss, variables=self.G_gen.variables, name='Adam_G')
+        Dy_optim = self.optimizer(loss=self.Dy_dis_loss, variables=self.Dy_dis.variables, name='Adam_Dy')
+        F_optim = self.optimizer(loss=self.F_loss, variables=self.F_gen.variables, name='Adam_F')
+        Dx_optim = self.optimizer(loss=self.Dx_dis_loss, variables=self.Dx_dis.variables, name='Adam_Dx')
         self.optims = tf.group([G_optim, Dy_optim, F_optim, Dx_optim])
 
         # for sampling function
         self.fake_y_sample = self.G_gen(self.x_test_tfph)
         self.fake_x_sample = self.F_gen(self.y_test_tfph)
 
-    def optimizer(self, loss, variables, name='optim'):
+    def optimizer(self, loss, variables, name='Adam'):
         global_step = tf.Variable(0, trainable=False)
         starter_learning_rate = self.flags.learning_rate
         end_learning_rate = 0.
@@ -95,6 +99,7 @@ class cycleGAN(object):
                                                             global_step - start_decay_step,
                                                             decay_steps, end_learning_rate, power=1.0),
                                   starter_learning_rate))
+        tf.summary.scalar('learning_rate/{}'.format(name), learning_rate)
 
         learn_step = tf.train.AdamOptimizer(learning_rate, beta1=self.flags.beta1, name=name).\
             minimize(loss, global_step=global_step, var_list=variables)
@@ -132,23 +137,33 @@ class cycleGAN(object):
         return loss
 
     def _tensorboard(self):
-        print('hello _tensorboard!')
+        tf.summary.histogram('Dy/real', self.Dy_dis(self.y_imgs))
+        tf.summary.histogram('Dy/fake', self.Dy_dis(self.G_gen(self.x_imgs)))
+        tf.summary.histogram('Dx/real', self.Dx_dis(self.x_imgs))
+        tf.summary.histogram('Dx/fake', self.Dx_dis(self.F_gen(self.y_imgs)))
 
-    # def generator(self):
-    #     print('hello generator!')
-    #
-    # def discriminator(self):
-    #     print('hello discriminator!')
+        tf.summary.scalar('loss/G_gen', self.G_gen_loss)
+        tf.summary.scalar('loss/Dy_dis', self.Dy_dis_loss)
+        tf.summary.scalar('loss/F_gen', self.F_gen_loss)
+        tf.summary.scalar('loss/Dx_dis', self.Dx_dis_loss)
+
+        tf.summary.image('X/generated_Y', tf_utils.batch_convert2int(self.G_gen(self.x_imgs)))
+        tf.summary.image('X/reconstruction', tf_utils.batch_convert2int(self.F_gen(self.G_gen(self.x_imgs))))
+        tf.summary.image('Y/generated_X', tf_utils.batch_convert2int(self.F_gen(self.y_imgs)))
+        tf.summary.image('Y/reconstruction', tf_utils.batch_convert2int(self.G_gen(self.F_gen(self.y_imgs))))
+
+        self.summary_op = tf.summary.merge_all()
 
     def train_step(self):
         fake_y_val, fake_x_val, x_val, y_val = self.sess.run([self.fake_y_imgs, self.fake_x_imgs,
                                                               self.x_imgs, self.y_imgs])
-        _, G_loss, Dy_loss, F_loss, Dx_loss = \
-            self.sess.run([self.optims, self.G_loss, self.Dy_dis_loss, self.F_loss, self.Dx_dis_loss],
+        _, G_loss, Dy_loss, F_loss, Dx_loss, summary = \
+            self.sess.run([self.optims, self.G_loss, self.Dy_dis_loss,
+                           self.F_loss, self.Dx_dis_loss, self.summary_op],
                           feed_dict={self.fake_x_tfph: self.fake_x_pool_obj.query(fake_x_val),
                                      self.fake_y_tfph: self.fake_y_pool_obj.query(fake_y_val)})
 
-        return [G_loss, Dy_loss, F_loss, Dx_loss]
+        return [G_loss, Dy_loss, F_loss, Dx_loss], summary
 
     def sample_imgs(self):
         x_val, y_val = self.sess.run([self.x_imgs, self.y_imgs])
@@ -157,7 +172,35 @@ class cycleGAN(object):
 
         return [x_val, fake_y, y_val, fake_x]
 
-    def write_tensorboard(self):
+    @staticmethod
+    def plots(imgs, iter_time, image_size, save_file):
+        # parameters for plot size
+        scale, margin = 0.05, 0.02
+        n_cols, n_rows = len(imgs), imgs[0].shape[0]
+        cell_size_h, cell_size_w = imgs[0].shape[1] * scale, imgs[0].shape[2] * scale
+
+        fig = plt.figure(figsize=(cell_size_w * n_cols, cell_size_h * n_rows))  # (column, row)
+        gs = gridspec.GridSpec(n_rows, n_cols)  # (row, column)
+        gs.update(wspace=margin, hspace=margin)
+
+        imgs = [utils.inverse_transform(imgs[idx]) for idx in range(len(imgs))]
+
+        # save more bigger image
+        for col_index in range(n_cols):
+            for row_index in range(n_rows):
+                ax = plt.subplot(gs[row_index * n_cols + col_index])
+                plt.axis('off')
+                ax.set_xticklabels([])
+                ax.set_yticklabels([])
+                ax.set_aspect('equal')
+                plt.imshow((imgs[col_index][row_index]).reshape(
+                    image_size[0], image_size[1], image_size[2]), cmap='Greys_r')
+
+        plt.savefig(save_file + '/sample_{}.png'.format(str(iter_time)), bbox_inches='tight')
+        plt.close(fig)
+
+    @staticmethod
+    def write_tensorboard():
         print('hello write_tensorboard!')
 
 

@@ -219,3 +219,13 @@ def print_activations(t):
 def show_all_variables():
     model_vars = tf.trainable_variables()
     slim.model_analyzer.analyze_vars(model_vars, print_info=True)
+
+
+def batch_convert2int(images):
+    # images: 4D float tensor (batch_size, image_size, image_size, depth)
+    return tf.map_fn(convert2int, images, dtype=tf.uint8)
+
+
+def convert2int(image):
+    # transform from float tensor ([-1.,1.]) to int image ([0,255])
+    return tf.image.convert_image_dtype((image + 1.0) / 2.0, tf.uint8)
