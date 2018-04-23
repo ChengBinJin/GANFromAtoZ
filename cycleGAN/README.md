@@ -1,1 +1,2 @@
-# cycleGAN
+# CycleGAN TensorFlow
+This work is a TensorFlow implementation of [Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks](http://openaccess.thecvf.com/content_ICCV_2017/papers/Zhu_Unpaired_Image-To-Image_Translation_ICCV_2017_paper.pdf). This implementation got a lot of inspiration from [vanhuyz's CycleGAN-TensorFlow](https://github.com/vanhuyz/CycleGAN-TensorFlow) work.  
