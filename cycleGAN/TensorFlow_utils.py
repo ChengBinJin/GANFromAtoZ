@@ -13,7 +13,8 @@ def padding2d(x, p_h=1, p_w=1, pad_type='REFLECT', name='pad2d'):
         return tf.pad(x, [[0, 0], [p_h, p_h], [p_w, p_w], [0, 0]], 'REFLECT', name=name)
 
 
-def conv2d(x, output_dim, k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02, padding='SAME', name='conv2d'):
+def conv2d(x, output_dim, k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02, padding='SAME', name='conv2d',
+           is_print=True):
     with tf.variable_scope(name):
         w = tf.get_variable('w', [k_h, k_w, x.get_shape()[-1], output_dim],
                             initializer=tf.truncated_normal_initializer(stddev=stddev))
@@ -22,6 +23,9 @@ def conv2d(x, output_dim, k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02, padding='SAME
         biases = tf.get_variable('biases', [output_dim], initializer=tf.constant_initializer(0.0))
         # conv = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape())
         conv = tf.nn.bias_add(conv, biases)
+
+        if is_print:
+            print_activations(conv)
 
         return conv
 

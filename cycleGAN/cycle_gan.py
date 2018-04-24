@@ -47,10 +47,12 @@ class cycleGAN(object):
 
         self.G_gen = Generator(name='G', ngf=self.ngf, norm=self.norm, image_size=self.image_size,
                                _ops=self._G_gen_train_ops)
-        self.Dy_dis = Discriminator(name='Dy', ndf=self.ndf, norm=self.norm, _ops=self._Dy_dis_train_ops)
+        self.Dy_dis = Discriminator(name='Dy', ndf=self.ndf, norm=self.norm, _ops=self._Dy_dis_train_ops,
+                                    use_sigmoid=self.use_sigmoid)
         self.F_gen = Generator(name='F', ngf=self.ngf, norm=self.norm, image_size=self.image_size,
                                _ops=self._F_gen_train_ops)
-        self.Dx_dis = Discriminator(name='Dx', ndf=self.ndf, norm=self.norm, _ops=self._Dx_dis_train_ops)
+        self.Dx_dis = Discriminator(name='Dx', ndf=self.ndf, norm=self.norm, _ops=self._Dx_dis_train_ops,
+                                    use_sigmoid=self.use_sigmoid)
 
         x_reader = Reader(self.x_path, name='X', image_size=self.image_size, batch_size=self.flags.batch_size)
         y_reader = Reader(self.y_path, name='Y', image_size=self.image_size, batch_size=self.flags.batch_size)
@@ -81,9 +83,9 @@ class cycleGAN(object):
         Dy_optim = self.optimizer(loss=self.Dy_dis_loss, variables=self.Dy_dis.variables, name='Adam_Dy')
         F_optim = self.optimizer(loss=self.F_loss, variables=self.F_gen.variables, name='Adam_F')
         Dx_optim = self.optimizer(loss=self.Dx_dis_loss, variables=self.Dx_dis.variables, name='Adam_Dx')
-        # self.optims = tf.group([G_optim, Dy_optim, F_optim, Dx_optim])
-        with tf.control_dependencies([G_optim, Dy_optim, F_optim, Dx_optim]):
-            self.optims = tf.no_op(name='optimizers')
+        self.optims = tf.group([G_optim, Dy_optim, F_optim, Dx_optim])
+        # with tf.control_dependencies([G_optim, Dy_optim, F_optim, Dx_optim]):
+        #     self.optims = tf.no_op(name='optimizers')
 
         # for sampling function
         self.fake_y_sample = self.G_gen(self.x_test_tfph)
@@ -117,7 +119,7 @@ class cycleGAN(object):
     def generator_loss(self, dis_obj, fake_img, use_lsgan=True):
         if use_lsgan:
             # use mean squared error
-            loss = tf.reduce_mean(tf.squared_difference(dis_obj(fake_img), self.real_label))
+            loss = 0.5 * tf.reduce_mean(tf.squared_difference(dis_obj(fake_img), self.real_label))
         else:
             # heuristic, non-saturating loss (I don't understand here!)
             # loss = -tf.reduce_mean(tf.log(dis_obj(fake_img) + self.eps)) / 2.  (???)
@@ -134,8 +136,7 @@ class cycleGAN(object):
             error_real = -tf.reduce_mean(tf.log(dis_obj(real_img) + self.eps))
             error_fake = -tf.reduce_mean(tf.log(1. - dis_obj(fake_img) + self.eps))
 
-        # loss = (error_real + error_fake) / 2. (???)
-        loss = error_real + error_fake
+        loss = 0.5 * (error_real + error_fake)
         return loss
 
     def _tensorboard(self):
@@ -280,12 +281,13 @@ class Generator(object):
 
 
 class Discriminator(object):
-    def __init__(self, name='', ndf=64, norm='instance', _ops=None):
+    def __init__(self, name='', ndf=64, norm='instance', _ops=None, use_sigmoid=False):
         self.name = name
         self.ndf = ndf
         self.norm = norm
         self._ops = _ops
         self.reuse = False
+        self.use_sigmoid = use_sigmoid
 
     def __call__(self, x):
         with tf.variable_scope(self.name, reuse=self.reuse):
@@ -316,8 +318,12 @@ class Discriminator(object):
 
             # (N, H/16, W/16, 512) -> (N, H/16, W/16, 1)
             conv5 = tf_utils.conv2d(conv4, 1, k_h=4, k_w=4, d_h=1, d_w=1, padding='SAME',
-                                    name='conv5_conv')
-            output = tf_utils.sigmoid(conv5, name='output_sigmoid', is_print=True)
+                                    name='conv5_conv', is_print=True)
+
+            if self.use_sigmoid:
+                output = tf_utils.sigmoid(conv5, name='output_sigmoid', is_print=True)
+            else:
+                output = tf.identity(conv5, name='output_without_sigmoid')
 
             # set reuse=True for next call
             self.reuse = True

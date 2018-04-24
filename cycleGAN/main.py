@@ -11,7 +11,7 @@ tf.flags.DEFINE_bool('is_train', True, 'default: True')
 
 tf.flags.DEFINE_float('learning_rate', 2e-4, 'initial leraning rate for Adam, default: 0.0002')
 tf.flags.DEFINE_float('beta1', 0.5, 'momentum term of Adam, default: 0.5')
-tf.flags.DEFINE_integer('iters', 200000, 'number of iterations, default: 200000')
+tf.flags.DEFINE_integer('iters', 2000, 'number of iterations, default: 200000')
 tf.flags.DEFINE_integer('print_freq', 10, 'print frequency, default: 100')
 tf.flags.DEFINE_integer('save_freq', 500, 'save frequency, default: 500')
 tf.flags.DEFINE_integer('sample_freq', 20, 'sample frequency, default: 200')
