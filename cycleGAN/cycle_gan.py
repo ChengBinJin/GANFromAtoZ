@@ -1,3 +1,8 @@
+# ---------------------------------------------------------
+# Tensorflow CycleGAN Implementation
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Cheng-Bin Jin, based on code from vanhuyz
+# ---------------------------------------------------------
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import tensorflow as tf
@@ -188,7 +193,7 @@ class cycleGAN(object):
     @staticmethod
     def plots(imgs, iter_time, image_size, save_file):
         # parameters for plot size
-        scale, margin = 0.05, 0.02
+        scale, margin = 0.02, 0.02
         n_cols, n_rows = len(imgs), imgs[0].shape[0]
         cell_size_h, cell_size_w = imgs[0].shape[1] * scale, imgs[0].shape[2] * scale
 

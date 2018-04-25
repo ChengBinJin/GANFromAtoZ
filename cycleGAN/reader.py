@@ -1,3 +1,8 @@
+# ---------------------------------------------------------
+# Tensorflow CycleGAN Implementation
+# Licensed under The MIT License [see LICENSE for details]
+# Written by vanhuyz
+# ---------------------------------------------------------
 import tensorflow as tf
 
 

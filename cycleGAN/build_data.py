@@ -1,3 +1,8 @@
+# ---------------------------------------------------------
+# Tensorflow build_data Implementation
+# Licensed under The MIT License [see LICENSE for details]
+# Written by vanhuyz
+# ---------------------------------------------------------
 import os
 import random
 import numpy as np

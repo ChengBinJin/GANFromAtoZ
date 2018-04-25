@@ -1,3 +1,8 @@
+# ---------------------------------------------------------
+# Tensorflow CycleGAN Implementation
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Cheng-Bin Jin
+# ---------------------------------------------------------
 import os
 import tensorflow as tf
 from solver import Solver

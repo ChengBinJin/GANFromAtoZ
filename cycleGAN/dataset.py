@@ -1,3 +1,8 @@
+# ---------------------------------------------------------
+# Tensorflow CycleGAN Implementation
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Cheng-Bin Jin
+# ---------------------------------------------------------
 class Day2Night(object):
     def __init__(self, flags):
         self.flags = flags
