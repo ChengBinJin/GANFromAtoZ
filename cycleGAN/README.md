@@ -16,3 +16,7 @@ This work is a TensorFlow implementation of [Unpaired Image-to-Image Translation
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/vanhuyz/CycleGAN-TensorFlow/blob/master/LICENSE) for more details.
+
+## References
+- CycleGAN paper: [Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks](https://arxiv.org/abs/1703.10593)  
+- [Vanhuyz's CycleGAN TensorFlow implementation](https://github.com/vanhuyz/CycleGAN-TensorFlow)
