@@ -17,7 +17,7 @@ This work is a TensorFlow implementation of [Unpaired Image-to-Image Translation
 ## Data Preparing
 Encode original data to tfrecrod files.  
 ```
-python build_data.py --input_dataA=YOUR_DATA_A_DIR --input_dataB=YOUR_DATA_B_DIR --output_dataA=day --output_dataB=night --extension=.jpg
+python build_data.py --input_dataA=YOUR_DATA_A_DIR --input_dataB=YOUR_DATA_B_DIR --output_dataA=alderley_day --output_dataB=alderley_night --extension=.jpg
 ```  
 tfrecord files are writed in ../data/tfrecords folder as shown in Directory Hierarchy.
 Check ```python build_data.py --help``` for more information.  
@@ -37,9 +37,31 @@ Check ```python build_data.py --help``` for more information.
 │   └── video2frames.py
 ├── data
 │   ├── tfrecords
-│   │   ├── day.tfrecords
-│   │   └── night.tfrecords
+│   │   ├── alderley_day.tfrecords
+│   │   └── alderley_night.tfrecords
 ```  
+**cycleGAN:** source codes of cycleGAN  
+**data:** tfrecord files for training
+
+## Training
+Move to **cycleGAN** folder and run main.py
+```
+python main.py 
+```
+### Arguments
+**gpu_index:** gpu index if you have multiple gpus, default: 0  
+**batch_size:** batch size, default: 1  
+**dataset:** dataset name, default: day2night  
+**is_train:** training or inference mode, default: True (training mode)  
+
+**learning_rate:** initial learning rate for Adam, default: 2e-4  
+**beta1:** momentum term of Adam, default: 0.5  
+**iters:** number of iterations, default: 2e+5  
+**print_freq:** print frequency for loss, default: 100  
+**save_freq:**  save frequency for model, default: 1000  
+**sample_freq:** sample frequency for saving image, default: 200  
+**load_model:**  folder of saved model that you wish to continue training (e.g. 20180502-1610), default: None  
+
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/vanhuyz/CycleGAN-TensorFlow/blob/master/LICENSE) for more details.
