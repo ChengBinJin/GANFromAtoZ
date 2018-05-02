@@ -5,3 +5,4 @@ cycleGAN/day2night
 cycleGAN/_*.*
 cycleGAN/backup/
 cycleGAN/video2frame.py
+cycleGAN/github_imgs/

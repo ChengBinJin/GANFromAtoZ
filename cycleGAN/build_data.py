@@ -12,10 +12,11 @@ import tensorflow as tf
 
 FLAGS = tf.flags.FLAGS
 
-tf.flags.DEFINE_string('input_dataA', '../data/ICVL/day', 'data A input directory, default: None')
-tf.flags.DEFINE_string('input_dataB', '../data/ICVL/night', 'data B input directory, default: None')
+tf.flags.DEFINE_string('input_dataA', None, 'data A input directory, default: None')
+tf.flags.DEFINE_string('input_dataB', None, 'data B input directory, default: None')
 tf.flags.DEFINE_string('output_dataA', 'dataA', 'data A output directory, default: None')
 tf.flags.DEFINE_string('output_dataB', 'dataB', 'data B output directory, default: None')
+tf.flags.DEFINE_string('extension', '.png', 'image extension, default: .png')
 
 
 def data_writer(input_dir, output_name, extension='.png'):
@@ -83,9 +84,9 @@ def _bytes_feature(value):
 
 def main(_):
     print("Convert {} data to tfrecords...".format(FLAGS.input_dataA))
-    data_writer(FLAGS.input_dataA, FLAGS.output_dataA, extension='.png')
+    data_writer(FLAGS.input_dataA, FLAGS.output_dataA, extension=FLAGS.extension)
     print("Convert {} data to tfrecords...".format(FLAGS.input_dataB))
-    data_writer(FLAGS.input_dataB, FLAGS.output_dataB, extension='.png')
+    data_writer(FLAGS.input_dataB, FLAGS.output_dataB, extension=FLAGS.extension)
 
 
 if __name__ == '__main__':
