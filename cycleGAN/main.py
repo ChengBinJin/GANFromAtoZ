@@ -11,7 +11,7 @@ FLAGS = tf.flags.FLAGS
 
 tf.flags.DEFINE_string('gpu_index', '0', 'gpu index if you have muliple gpus, default: 0')
 tf.flags.DEFINE_integer('batch_size', 1, 'batch size, default: 1')
-tf.flags.DEFINE_string('dataset', 'day2night', 'dataset name, default; day2night')
+tf.flags.DEFINE_string('dataset', 'day2night', 'dataset name, default: day2night')
 tf.flags.DEFINE_bool('is_train', True, 'training or inference mode, default: True')
 
 tf.flags.DEFINE_float('learning_rate', 2e-4, 'initial leraning rate for Adam, default: 0.0002')

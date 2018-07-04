@@ -1,5 +1,5 @@
 data/
-cycleGAN/.idea/
+*/.idea/
 cycleGAN/__pycache__
 cycleGAN/day2night
 cycleGAN/_*.*
