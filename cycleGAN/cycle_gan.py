@@ -2,6 +2,7 @@
 # Tensorflow CycleGAN Implementation
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Cheng-Bin Jin, based on code from vanhuyz
+# Email: sbkim0407@gmail.com
 # ---------------------------------------------------------
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec

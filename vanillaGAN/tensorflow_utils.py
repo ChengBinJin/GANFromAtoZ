@@ -14,8 +14,7 @@ def padding2d(x, p_h=1, p_w=1, pad_type='REFLECT', name='pad2d'):
         return tf.pad(x, [[0, 0], [p_h, p_h], [p_w, p_w], [0, 0]], 'REFLECT', name=name)
 
 
-def conv2d(x, output_dim, k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02, padding='SAME', name='conv2d',
-           is_print=True):
+def conv2d(x, output_dim, k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02, padding='SAME', name='conv2d', is_print=True):
     with tf.variable_scope(name):
         w = tf.get_variable('w', [k_h, k_w, x.get_shape()[-1], output_dim],
                             initializer=tf.truncated_normal_initializer(stddev=stddev))
@@ -140,7 +139,7 @@ def instance_norm(x, name='instance_norm', mean=1.0, stddev=0.02, epsilon=1e-5):
         return scale * normalized + offset
 
 
-def n_res_blocks(x,  _ops=None, norm_='instance', is_train=True, num_blocks=6, is_print=False):
+def n_res_blocks(x, _ops=None, norm_='instance', is_train=True, num_blocks=6, is_print=False):
     output = None
     for idx in range(1, num_blocks+1):
         output = res_block(x, x.get_shape()[3], _ops=_ops, norm_=norm_, is_train=is_train,
@@ -154,23 +153,39 @@ def n_res_blocks(x,  _ops=None, norm_='instance', is_train=True, num_blocks=6, i
 
 
 # norm(x, name, _type, _ops, is_train=True)
-def res_block(x, k, _ops=None, norm_='instance', is_train=True, name=None):
+def res_block(x, k, _ops=None, norm_='instance', is_train=True, pad_type=None, name=None):
     with tf.variable_scope(name):
+        conv1, conv2 = None, None
+
         # 3x3 Conv-Batch-Relu S1
         with tf.variable_scope('layer1'):
-            padded1 = padding2d(x, p_h=1, p_w=1, pad_type='REFLECT', name='padding')
-            conv1 = conv2d(padded1, k, k_h=3, k_w=3, d_h=1, d_w=1, padding='VALID', name='conv')
+            if pad_type is None:
+                conv1 = conv2d(x, k, k_h=3, k_w=3, d_h=1, d_w=1, padding='SAME', name='conv')
+            elif pad_type == 'REFLECT':
+                padded1 = padding2d(x, p_h=1, p_w=1, pad_type='REFLECT', name='padding')
+                conv1 = conv2d(padded1, k, k_h=3, k_w=3, d_h=1, d_w=1, padding='VALID', name='conv')
             normalized1 = norm(conv1, name='norm', _type=norm_, _ops=_ops, is_train=is_train)
             relu1 = tf.nn.relu(normalized1)
 
         # 3x3 Conv-Batch S1
         with tf.variable_scope('layer2'):
-            padded2 = padding2d(relu1, p_h=1, p_w=1, pad_type='REFLECT', name='padding')
-            conv2 = conv2d(padded2, k, k_h=3, k_w=3, d_h=1, d_w=1, padding='VALID', name='conv')
+            if pad_type is None:
+                conv2 = conv2d(relu1, k, k_h=3, k_w=3, d_h=1, d_w=1, padding='SAME', name='conv')
+            elif pad_type == 'REFLECT':
+                padded2 = padding2d(relu1, p_h=1, p_w=1, pad_type='REFLECT', name='padding')
+                conv2 = conv2d(padded2, k, k_h=3, k_w=3, d_h=1, d_w=1, padding='VALID', name='conv')
             normalized2 = norm(conv2, name='norm', _type=norm_, _ops=_ops, is_train=is_train)
 
     # sum layer1 and layer2
     output = x + normalized2
+    return output
+
+
+def identity(x, name='identity', is_print=False):
+    output = tf.identity(x, name=name)
+    if is_print:
+        print_activations(output)
+
     return output
 
 

@@ -2,6 +2,7 @@
 # Tensorflow CycleGAN Implementation
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Cheng-Bin Jin
+# Email: sbkim0407@gmail.com
 # ---------------------------------------------------------
 import os
 import time
@@ -68,7 +69,7 @@ class Solver(object):
             else:
                 print(' [!] Load Failed...\n')
 
-        # threads for tfrecrod
+        # threads for tfrecord
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=self.sess, coord=coord)
 
