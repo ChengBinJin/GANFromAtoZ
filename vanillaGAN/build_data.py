@@ -16,7 +16,7 @@ tf.flags.DEFINE_string('input_dataA', None, 'data A input directory, default: No
 tf.flags.DEFINE_string('input_dataB', None, 'data B input directory, default: None')
 tf.flags.DEFINE_string('output_dataA', 'dataA', 'data A output directory, default: None')
 tf.flags.DEFINE_string('output_dataB', 'dataB', 'data B output directory, default: None')
-tf.flags.DEFINE_string('extension', '.png', 'image extension, default: .png')
+tf.flags.DEFINE_string('extension', '.png', 'input image extension, default: .png')
 
 
 def data_writer(input_dir, output_name, extension='.png'):

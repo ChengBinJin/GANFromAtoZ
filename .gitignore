@@ -2,7 +2,7 @@ data/
 */.idea/
 */__pycache__
 */day2night
-cycleGAN/_*.*
+*/_*.*
 cycleGAN/backup/
 cycleGAN/video2frame.py
-cycleGAN/github_imgs/
+*/github_imgs/
