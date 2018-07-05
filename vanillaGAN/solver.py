@@ -5,6 +5,7 @@
 # Email: sbkim0407@gmail.com
 # ---------------------------------------------------------
 import os
+import time
 import numpy as np
 import tensorflow as tf
 from datetime import datetime
@@ -32,17 +33,23 @@ class Solver(object):
         tf_utils.show_all_variables()
 
     def _make_folders(self):
-        cur_time = datetime.now().strftime("%Y%m%d-%H%M")
-        self.model_out_dir = "{}/model/{}".format(self.flags.dataset, cur_time)
-        if not os.path.isdir(self.model_out_dir):
-            os.makedirs(self.model_out_dir)
+        if self.flags.is_train:
+            cur_time = datetime.now().strftime("%Y%m%d-%H%M")
+            self.model_out_dir = "{}/model/{}".format(self.flags.dataset, cur_time)
+            if not os.path.isdir(self.model_out_dir):
+                os.makedirs(self.model_out_dir)
 
-        self.sample_out_dir = "{}/sample/{}".format(self.flags.dataset, cur_time)
-        if not os.path.isdir(self.sample_out_dir):
-            os.makedirs(self.sample_out_dir)
+            self.sample_out_dir = "{}/sample/{}".format(self.flags.dataset, cur_time)
+            if not os.path.isdir(self.sample_out_dir):
+                os.makedirs(self.sample_out_dir)
 
-        self.train_writer = tf.summary.FileWriter("{}/logs/{}".format(self.flags.dataset, cur_time),
-                                                  graph_def=self.sess.graph_def)
+            self.train_writer = tf.summary.FileWriter("{}/logs/{}".format(self.flags.dataset, cur_time),
+                                                      graph_def=self.sess.graph_def)
+        else:
+            self.model_out_dir = "{}/model/{}".format(self.flags.dataset, self.flags.load_model)
+            self.test_out_dir = "{}/test/{}".format(self.flags.dataset, self.flags.load_model)
+            if not os.path.isdir(self.test_out_dir):
+                os.makedirs(self.test_out_dir)
 
     def train(self):
         # threads for tfrecord
@@ -63,6 +70,8 @@ class Solver(object):
                 # save model
                 self.save_model(iter_time)
 
+            self.save_model(self.flags.iters)
+
         except KeyboardInterrupt:
             coord.request_stop()
         except Exception as e:
@@ -71,6 +80,23 @@ class Solver(object):
             # when done, ask the thread to stop
             coord.request_stop()
             coord.join(threads)
+
+    def test(self):
+        if self.load_model():
+            print(' [*] Load SUCCESS!')
+        else:
+            print(' [!] Load Failed...')
+
+        num_iters = 10
+        total_time = 0.
+        for iter_time in range(num_iters):
+            # measure inference time
+            start_time = time.time()
+            imgs = self.model.sample_test()  # inference
+            total_time += time.time() - start_time
+            self.model.plots_test(imgs, iter_time, self.test_out_dir)
+
+        print('Avg PT: {:.2f} msec.'.format(total_time / num_iters * 1000.))
 
     def sample(self, iter_time):
         if np.mod(iter_time, self.flags.sample_freq) == 0:
@@ -85,3 +111,14 @@ class Solver(object):
             print('=====================================')
             print('             Model saved!            ')
             print('=====================================\n')
+
+    def load_model(self):
+        print(' [*] Reading checkpoint...')
+
+        ckpt = tf.train.get_checkpoint_state(self.model_out_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            self.saver.restore(self.sess, os.path.join(self.model_out_dir, ckpt_name))
+            return True
+        else:
+            return False
