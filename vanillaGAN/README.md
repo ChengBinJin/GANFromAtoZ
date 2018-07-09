@@ -46,7 +46,7 @@ Check ```python build_data.py --help``` for more information.
 - `--output_dataB`: data B output directory, default: `None`
 - `--extension`: input image extension, default: `.png`
 
-## Directory Hierarchy
+### Directory Hierarchy
 ``` 
 .
 ├── vanillaGAN
