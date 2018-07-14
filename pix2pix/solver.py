@@ -26,6 +26,7 @@ class Solver(object):
         self.dataset = dataset(self.flags.dataset, image_size=self.image_size)
         self.model = Pix2Pix(self.sess, self.flags, image_size=self.image_size)
         self._make_folders()
+        self.iter_time = 0
 
         self.saver = tf.train.Saver()
         self.sess.run(tf.global_variables_initializer())
@@ -34,16 +35,21 @@ class Solver(object):
 
     def _make_folders(self):
         if self.flags.is_train:
-            cur_time = datetime.now().strftime("%Y%m%d-%H%M")
-            self.model_out_dir = "{}_{}/model/{}".format(self.flags.dataset, self.flags.which_direction, cur_time)
-            self.sample_out_dir = "{}_{}/sample/{}".format(self.flags.dataset, self.flags.which_direction, cur_time)
-            self.train_writer = tf.summary.FileWriter('{}_{}/logs/{}'.format(self.flags.dataset,
-                                                                             self.flags.which_direction, cur_time))
+            if self.flags.load_model is None:
+                cur_time = datetime.now().strftime("%Y%m%d-%H%M")
+                self.model_out_dir = "{}_{}/model/{}".format(self.flags.dataset, self.flags.which_direction, cur_time)
+                if not os.path.isdir(self.model_out_dir):
+                    os.makedirs(self.model_out_dir)
+            else:
+                cur_time = self.flags.load_model
+                self.model_out_dir = "{}_{}/model/{}".format(self.flags.dataset, self.flags.which_direction, cur_time)
 
-            if not os.path.isdir(self.model_out_dir):
-                os.makedirs(self.model_out_dir)
+            self.sample_out_dir = "{}_{}/sample/{}".format(self.flags.dataset, self.flags.which_direction, cur_time)
             if not os.path.isdir(self.sample_out_dir):
                 os.makedirs(self.sample_out_dir)
+
+            self.train_writer = tf.summary.FileWriter('{}_{}/logs/{}'.format(self.flags.dataset,
+                                                                             self.flags.which_direction, cur_time))
 
         elif not self.flags.is_train:
             self.model_out_dir = "{}_{}/model/{}".format(self.flags.dataset, self.flags.which_direction,
@@ -55,20 +61,30 @@ class Solver(object):
                 os.makedirs(self.test_out_dir)
 
     def train(self):
-        for iter_time in range(self.flags.iters):
+        # load initialized checkpoint that provided
+        if self.flags.load_model is not None:
+            if self.load_model():
+                print(' [*] Load SUCCESS!\n')
+            else:
+                print(' [!] Load Failed...\n')
+
+        # for iter_time in range(self.flags.iters):
+        while self.iter_time < self.flags.iters:
             # samppling images and save them
-            self.sample(iter_time)
+            self.sample(self.iter_time)
 
             # train_step
             imgs_x, imgs_y = self.dataset.train_next_batch(batch_size=self.flags.batch_size,
                                                            which_direction=self.flags.which_direction)
             loss, summary = self.model.train_step(imgs_x, imgs_y)
-            self.model.print_info(loss, iter_time)
-            self.train_writer.add_summary(summary, iter_time)
+            self.model.print_info(loss, self.iter_time)
+            self.train_writer.add_summary(summary, self.iter_time)
             self.train_writer.flush()
 
             # save model
-            self.save_model(iter_time)
+            self.save_model(self.iter_time)
+
+            self.iter_time += 1
 
         self.save_model(self.flags.iters)
 
@@ -117,6 +133,14 @@ class Solver(object):
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
             self.saver.restore(self.sess, os.path.join(self.model_out_dir, ckpt_name))
+
+            meta_graph_path = ckpt.model_checkpoint_path + '.meta'
+            self.iter_time = int(meta_graph_path.split('-')[-1].split('.')[0])
+
+            print('===========================')
+            print('   iter_time: {}'.format(self.iter_time))
+            print('===========================')
+
             return True
         else:
             return False
