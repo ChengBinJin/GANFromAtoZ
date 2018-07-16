@@ -94,7 +94,7 @@ class Solver(object):
         else:
             print(' [!] Load Failed...')
 
-        num_iters = int(self.dataset.num_tests / self.flags.sample_batch)
+        num_iters = int(self.dataset.num_vals / self.flags.sample_batch)
         total_time = 0.
         for iter_time in range(num_iters):
             print(iter_time)
