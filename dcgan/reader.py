@@ -1,5 +1,5 @@
 # ---------------------------------------------------------
-# Tensorflow Vanilla GAN Implementation
+# Tensorflow DCGAN Implementation
 # Licensed under The MIT License [see LICENSE for details]
 # Written by vanhuyz
 # ---------------------------------------------------------
