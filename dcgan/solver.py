@@ -93,7 +93,7 @@ class Solver(object):
         else:
             print(' [!] Load Failed...')
 
-        num_iters = 10
+        num_iters = 20
         total_time = 0.
         for iter_time in range(num_iters):
             # measure inference time
