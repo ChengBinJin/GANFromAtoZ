@@ -1,6 +1,6 @@
 # Vanilla GAN for Day2Night
 
-This is Tensorflow implementation of the [Vanilla GAN](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf) 
+This is a Tensorflow implementation of the [Vanilla GAN](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf) 
 (Ian J. Goodfellows, et al., "Generative Adversarial Nets," NIPS2014) for day2night project.
 
 <p align='center'>
