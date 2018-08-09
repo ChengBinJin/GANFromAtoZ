@@ -21,10 +21,10 @@ tf.flags.DEFINE_integer('num_critic', 5, 'the number of iterations of the critic
 tf.flags.DEFINE_float('clip_val', 0.01, 'clipping value for Lipschitz constrain of the WGAN')
 tf.flags.DEFINE_integer('z_dim', 100, 'dimension of z vector, default: 100')
 
-tf.flags.DEFINE_integer('iters', 200000, 'number of iterations, default: 200000')
-tf.flags.DEFINE_integer('print_freq', 100, 'print frequency for loss, default: 100')
+tf.flags.DEFINE_integer('iters', 20, 'number of iterations, default: 200000')
+tf.flags.DEFINE_integer('print_freq', 1, 'print frequency for loss, default: 100')
 tf.flags.DEFINE_integer('save_freq', 10000, 'save frequency for model, default: 10000')
-tf.flags.DEFINE_integer('sample_freq', 500, 'sample frequency for saving image, default: 500')
+tf.flags.DEFINE_integer('sample_freq', 5, 'sample frequency for saving image, default: 500')
 tf.flags.DEFINE_integer('sample_batch', 16, 'number of sampling images for check generator quality, default: 16')
 tf.flags.DEFINE_string('load_model', None,
                        'folder of saved model that you wish to test, (e.g. 20180704-1736), default: None')
