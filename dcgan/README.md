@@ -7,7 +7,7 @@ Adversarial Networks, ICLR2016](https://arxiv.org/pdf/1511.06434.pdf) for Day2Ni
 </p>
   
 ## Requirements
-- tensorflow 1.19.0
+- tensorflow 1.9.0
 - python 3.5.3
 - numpy 1.14.2
 - pillow 5.0.0
