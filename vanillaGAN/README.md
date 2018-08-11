@@ -8,7 +8,7 @@ This is a Tensorflow implementation of the [Vanilla GAN](https://papers.nips.cc/
 </p>
   
 ## Requirements
-- tensorflow 1.18.0
+- tensorflow 1.8.0
 - python 3.5.3
 - numpy 1.14.2
 - pillow 5.0.0
