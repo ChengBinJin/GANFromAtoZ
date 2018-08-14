@@ -6,6 +6,7 @@ This repository tries to generate synthetic night images using various GAN metho
 - DCGAN
 - Pix2pix
 - Vanilla GAN
+- WGAN
 
 **CycleGAN**
 <p align="center">
@@ -25,4 +26,9 @@ This repository tries to generate synthetic night images using various GAN metho
 **Vanilla GAN**
 <p align="center">
 <img src="https://user-images.githubusercontent.com/37034031/42319732-cec97536-808d-11e8-917e-489119d01929.png" width=800>
+</p>
+
+**WGAN**
+<p align="center">
+<img src="https://user-images.githubusercontent.com/37034031/44076087-e0b52004-9fd9-11e8-8a61-8eede39b1777.png" width=800>
 </p>
