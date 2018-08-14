@@ -65,7 +65,7 @@ Check ```python build_data.py --help``` for more information.
 │   │   └── alderley_night.tfrecords
 ├── ...
 ```  
-**DCGAN:** source codes of DCGAN  
+**dcgan:** source codes of DCGAN  
 **data:** tfrecord files for training
 
 ### Implementation Details
