@@ -51,6 +51,7 @@ Check ```python build_data.py --help``` for more information.
 ``` 
 .
 ├── dcgan
+│   ├── build_data.py
 │   ├── dataset.py
 │   ├── dcgan.py
 │   ├── main.py
