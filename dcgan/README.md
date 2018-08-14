@@ -50,7 +50,7 @@ Check ```python build_data.py --help``` for more information.
 ### Directory Hierarchy
 ``` 
 .
-├── src
+├── dcgan
 │   ├── dataset.py
 │   ├── dcgan.py
 │   ├── main.py
