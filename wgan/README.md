@@ -1,26 +1,41 @@
-# DCGAN for Day2Night
-This is a Tensorflow implementation of Alec Radford's [Unsupervised Representation Learning with Deep Convolutional Generative 
-Adversarial Networks, ICLR2016](https://arxiv.org/pdf/1511.06434.pdf) for Day2Night project.
+# WGAN for Day2Night
+This repository is a Tensorflow implementation of Martin Arjovsky's 
+[Wasserstein GAN, arXiv:1701.07875v3](https://arxiv.org/pdf/1701.07875.pdf) for Day2Night project.
 
 <p align='center'>
-  <img src="https://user-images.githubusercontent.com/37034031/43059677-9688883e-8e88-11e8-84a7-c8f0f6afeca6.png" width=800)
+  <img src="https://user-images.githubusercontent.com/37034031/43870865-b795a83e-9bb4-11e8-8005-461951b3d7b7.png" width=700)
 </p>
-  
+
 ## Requirements
 - tensorflow 1.9.0
 - python 3.5.3
 - numpy 1.14.2
 - pillow 5.0.0
-- matplotlib 2.0.2
+- scipy 0.19.0
+- matplotlib 2.2.2
+
+## Applied GAN Structure
+1. **Generator (DCGAN)**
+<p align='center'>
+   <img src="https://user-images.githubusercontent.com/37034031/43059677-9688883e-8e88-11e8-84a7-c8f0f6afeca6.png" width=700>
+</p>
+
+2. **Critic (DCGAN)**
+<p align='center'>
+   <img src="https://user-images.githubusercontent.com/37034031/43060075-47f274d0-8e8a-11e8-88ff-3211385c7544.png" width=500>
+</p>
 
 ## Generated Night Images
 <p align='center'>
-<img src="https://user-images.githubusercontent.com/37034031/43063275-5afc9842-8e96-11e8-9461-c20884c46094.png" width=800>
+<img src="https://user-images.githubusercontent.com/37034031/44075067-44887e9a-9fd6-11e8-821d-d11514c7213f.png" width=800>
+</p>
+<p align='center'>
+<img src="https://user-images.githubusercontent.com/37034031/44075109-65d1009a-9fd6-11e8-8f2d-f5ec5e4e4919.png" width=800>
 </p>
 
-<p align='center'>
-<img src="https://user-images.githubusercontent.com/37034031/43063329-7569696c-8e96-11e8-8b10-35f65e21c8ce.png" width=800>
-</p>
+**Note:** The results are not good as paper mentioned. 
+We found that the Wasserstein distance can't converge well in the Day2Night dataset.
+High dimension of the data maybe the problem.
 
 ## Documentation
 ### Download Dataset
@@ -50,10 +65,10 @@ Check ```python build_data.py --help``` for more information.
 ### Directory Hierarchy
 ``` 
 .
-├── dcgan
+├── wgan
 │   ├── build_data.py
 │   ├── dataset.py
-│   ├── dcgan.py
+│   ├── wgan.py
 │   ├── main.py
 │   ├── reader.py
 │   ├── solver.py
@@ -65,16 +80,17 @@ Check ```python build_data.py --help``` for more information.
 │   │   └── alderley_night.tfrecords
 ├── ...
 ```  
-**dcgan:** source codes of DCGAN  
+**wgan:** source codes of WGAN  
 **data:** tfrecord files for training
 
 ### Implementation Details
-Implementation uses TensorFlow to train the DCGAN. Same generator and discriminator networks are used as 
-described in [Alec Radford's paper](https://arxiv.org/pdf/1511.06434.pdf), except the batch normalization of training mode is 
-used in training and test mode that we found to get more stalbe results and the generated image size is (128, 256).
+Implementation uses TensorFlow to train the WGAN. 
+Same generator and critic networks are used as described in [Alec Radford's paper](https://arxiv.org/pdf/1511.06434.pdf). 
+WGAN does not use a sigmoid function in the last layer of the critic, a log-likelihood in the cost function. 
+Optimizer is used RMSProp instead of Adam.  
 
-### Training DCGAN
-Use `main.py` to train a DCGAN network. Example usage:
+### Training WGAN
+Use `main.py` to train a WGAN network. Example usage:
 
 ```
 python main.py --is_train=true
@@ -83,39 +99,47 @@ python main.py --is_train=true
  - `batch_size`: batch size for one feed forward, default: `64`
  - `dataset`: dataset name, default: `day2night`
  - `is_train`: 'training or inference mode, default: `False`
- - `learning_rate`: initial learning rate, default: `0.0002`
- - `beta1`: momentum term of Adam, default: `0.5`
+ - `learning_rate`: initial learning rate, default: `0.00005`
+ - `num_critic`: the number of iterations of the critic per generator iteration, default: `5`
+ - `clip_val`: clipping value for Lipschitz costrain of the WGAN, default: `0.01`
  - `z_dim`: dimension of z vector, default: `100`
- - `iters`: number of interations, default: `200000`
- - `print_freq`: print frequency for loss, default: `100`
+ - `iters`: number of interations, default: `100000`
+ - `print_freq`: print frequency for loss, default: `50`
  - `save_freq`: save frequency for model, default: `10000`
- - `sample_freq`: sample frequency for saving image, default: `500`
- - `sample_size`: sample size for check generated image quality, default: `64`
+ - `sample_freq`: sample frequency for saving image, default: `250`
+ - `sample_size`: sample size for check generated image quality, default: `16`
  - `load_model`: folder of save model that you wish to test, (e.g. 20180704-1736). default: `None`
  
-### Evaluate DCGAN
-Use `main.py` to evaluate a DCGAN network. Example usage:
+ ### Wasserstein Distance During Training
+<p align='center'>
+<img src="https://user-images.githubusercontent.com/37034031/44075809-0b40c892-9fd9-11e8-8cdb-671a99c80a4f.png" width=900>
+</p>
+
+ ### Evaluate WGAN
+Use `main.py` to evaluate a WGAN network. Example usage:
 
 ```
 python main.py --is_train=false --load_model=folder/you/wish/to/test/e.g./20180704-1746
 ```
 Please refer to the above arguments.
-
+ 
 ### Citation
 ```
-  @misc{chengbinjin2018day2nightdcgan,
+  @misc{chengbinjin2018day2nightwgan,
     author = {Cheng-Bin Jin},
-    title = {DCGAN for Day2Night},
+    title = {WGAN for Day2Night},
     year = {2018},
-    howpublished = {\url{https://github.com/ChengBinJin/GANFromAtoZ/tree/master/dcgan}},
+    howpublished = {\url{https://github.com/ChengBinJin/GANFromAtoZ/tree/master/wgan}},
     note = {commit xxxxxxx}
   }
 ```
 
 ### Attributions/Thanks
-- This project borrowed some code from [carpedm20](https://github.com/carpedm20/DCGAN-tensorflow)
+- This project borrowed some code from [wiseodd](https://github.com/wiseodd/generative-models)
 - Some readme formatting was borrowed from [Logan Engstrom](https://github.com/lengstrom/fast-style-transfer)
 
 ## License
 Copyright (c) 2018 Cheng-Bin Jin. Contact me for commercial use (or rather any use that is not academic research) (
 email: sbkim0407@gmail.com). Free for research use, as long as proper attribution is given and this copyright notice is retained.
+ 
+ 

@@ -7,7 +7,7 @@ This repository is a Tensorflow implementation of Isola's [Image-to-Image Tranas
 </p>
 
 ## Requirements
-- tensorflow 1.18.0
+- tensorflow 1.8.0
 - python 3.5.3  
 - numpy 1.14.2  
 - matplotlib 2.0.2  
