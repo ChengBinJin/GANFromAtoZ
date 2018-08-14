@@ -171,6 +171,12 @@ class WGAN(object):
 
     def sample_imgs(self):
         g_feed = {self.z: self.sample_z(num=self.flags.sample_batch)}
+        y_fakes, y_imgs = self.sess.run([self.g_samples, self.y_imgs], feed_dict=g_feed)
+
+        return [y_fakes, y_imgs]
+
+    def sample_test(self):
+        g_feed = {self.z: self.sample_z(num=self.flags.sample_batch)}
         y_fakes = self.sess.run(self.g_samples, feed_dict=g_feed)
 
         return [y_fakes]
@@ -191,14 +197,17 @@ class WGAN(object):
     def plots(self, imgs_, iter_time, save_file):
         # reshape image from vector to (N, H, W, C)
         imgs_fake = np.reshape(imgs_[0], (self.flags.sample_batch, *self.image_size))
+        imgs_real = np.reshape(imgs_[1], (self.flags.batch_size, *self.image_size))
 
         imgs = []
         for img in imgs_fake:
             imgs.append(img)
+        for img in imgs_real[:self.flags.sample_batch]:
+            imgs.append(img)
 
         # parameters for plot size
-        scale, margin = 0.04, 0.01
-        n_cols, n_rows = int(np.sqrt(len(imgs))), int(np.sqrt(len(imgs)))
+        scale, margin = 0.02, 0.01
+        n_cols, n_rows = int(np.sqrt(len(imgs) / 2)), int(np.sqrt(len(imgs) / 2)) * 2
         cell_size_h, cell_size_w = imgs[0].shape[0] * scale, imgs[0].shape[1] * scale
 
         fig = plt.figure(figsize=(cell_size_w * n_cols, cell_size_h * n_rows))  # (column, row)
