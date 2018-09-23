@@ -34,7 +34,7 @@ class cycleGAN(object):
         self.lambda1, self.lambda2 = 10.0, 10.0
         self.ngf, self.ndf = 64, 64
         self.real_label = 0.9
-        self.start_dcay_step = 100000
+        self.start_decay_step = 100000
         self.decay_steps = 100000
         self.eps = 1e-12
 
@@ -101,7 +101,7 @@ class cycleGAN(object):
         global_step = tf.Variable(0, trainable=False)
         starter_learning_rate = self.flags.learning_rate
         end_learning_rate = 0.
-        start_decay_step = self.start_dcay_step
+        start_decay_step = self.start_decay_step
         decay_steps = self.decay_steps
 
         learning_rate = (tf.where(tf.greater_equal(global_step, start_decay_step),
