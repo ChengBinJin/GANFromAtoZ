@@ -1,4 +1,5 @@
-# Tensorflow DiscoGAN Implementation
+# ---------------------------------------------------------
+# Tensorflow DiscoGAN Implementation for Day2Night Project
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Cheng-Bin Jin
 # Email: sbkim0407@gmail.com
@@ -10,7 +11,6 @@ import tensorflow as tf
 from datetime import datetime
 
 # noinspection PyPep8Naming
-import tensorflow_utils as tf_utils
 from dataset import Dataset
 from discogan import DiscoGAN
 
@@ -22,7 +22,7 @@ class Solver(object):
         self.sess = tf.Session(config=run_config)
 
         self.flags = flags
-        self.dataset = Dataset(self.flags.dataset, self.flags)
+        self.dataset = Dataset(self.flags.dataset, self.flags, image_size=(128, 256, 3))
         self.model = DiscoGAN(self.sess, self.flags, self.dataset.image_size, self.dataset())
 
         self._make_folders()
@@ -31,7 +31,7 @@ class Solver(object):
         self.saver = tf.train.Saver()
         self.sess.run([tf.global_variables_initializer()])
 
-        tf_utils.show_all_variables()
+        # tf_utils.show_all_variables()
 
     def _make_folders(self):
         if self.flags.is_train:  # train stage
@@ -100,33 +100,43 @@ class Solver(object):
         else:
             print(' [!] Load Failed...')
 
-        num_iters = int(self.dataset.num_vals / self.flags.sample_batch)
-        total_time = 0.
-        for iter_time in range(num_iters):
-            print('iter_time: {}'.format(iter_time))
+        # threads for tfrecord
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(sess=self.sess, coord=coord)
 
-            # measure inference time
-            start_time = time.time()
-            imgs_x, imgs_y = self.dataset.val_next_batch(batch_size=self.flags.sample_batch, is_train=False)
-            imgs = self.model.test_step(imgs_x, imgs_y)  # inference
-            total_time += time.time() - start_time
-            self.model.plots(imgs, iter_time, self.test_out_dir)
+        try:
+            num_iters = 20
+            total_time = 0.
+            for iter_time in range(num_iters):
+                print('iter_time: {}'.format(iter_time))
 
-        print('Avg PT: {:.2f} msec.'.format(total_time / num_iters * 1000.))
+                # measure inference time
+                start_time = time.time()
+                imgs = self.model.sample_test()  # inference
+                total_time += time.time() - start_time
+                self.model.plots(imgs, iter_time, self.test_out_dir)
+
+            print('Avg PT: {:.2f} msec.'.format(total_time / num_iters * 1000.))
+
+        except KeyboardInterrupt:
+            coord.request_stop()
+        except Exception as e:
+            coord.request_stop(e)
+        finally:
+            # when done, ask the threads to stop
+            coord.request_stop()
+            coord.join(threads)
 
     def sample(self, iter_time):
         if np.mod(iter_time, self.flags.sample_freq) == 0:
-            imgs = self.model.sample_imgs()
-            self.model.plots(imgs, iter_time, self.sample_out_dir)
+            imgs, names = self.model.sample_imgs()
+            self.model.plots(imgs, iter_time, self.sample_out_dir, names)
 
     def save_model(self, iter_time):
         if np.mod(iter_time + 1, self.flags.save_freq) == 0:
             model_name = 'model'
             self.saver.save(self.sess, os.path.join(self.model_out_dir, model_name), global_step=iter_time)
-
-            print('=====================================')
-            print('             Model saved!            ')
-            print('=====================================\n')
+            print('[*] Model saved!')
 
     def load_model(self):
         print(' [*] Reading checkpoint...')
@@ -139,9 +149,7 @@ class Solver(object):
             meta_graph_path = ckpt.model_checkpoint_path + '.meta'
             self.iter_time = int(meta_graph_path.split('-')[-1].split('.')[0])
 
-            print('===========================')
-            print('   iter_time: {}'.format(self.iter_time))
-            print('===========================')
+            print('[*] Load iter_time: {}'.format(self.iter_time))
             return True
         else:
             return False
