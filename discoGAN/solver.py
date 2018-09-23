@@ -112,7 +112,7 @@ class Solver(object):
 
                 # measure inference time
                 start_time = time.time()
-                imgs = self.model.sample_test()  # inference
+                imgs = self.model.test_step()  # inference
                 total_time += time.time() - start_time
                 self.model.plots(imgs, iter_time, self.test_out_dir)
 
