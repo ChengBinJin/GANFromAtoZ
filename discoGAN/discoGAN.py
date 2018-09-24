@@ -4,6 +4,7 @@
 # Written by Cheng-Bin Jin, based on code from vanhuyz
 # Email: sbkim0407@gmail.com
 # ---------------------------------------------------------
+import os
 import collections
 import numpy as np
 import matplotlib as mpl
@@ -53,7 +54,7 @@ class DiscoGAN(object):
                                _ops=self._F_gen_train_ops)
         self.Dx_dis = Discriminator(name='Dx', ndf=self.ndf, norm=self.norm, _ops=self._Dx_dis_train_ops)
 
-        x_reader = Reader(self.x_path, name='X', imae_size=self.image_size, batch_size=self.flags.batch_size)
+        x_reader = Reader(self.x_path, name='X', image_size=self.image_size, batch_size=self.flags.batch_size)
         y_reader = Reader(self.y_path, name='Y', image_size=self.image_size, batch_size=self.flags.batch_size)
         self.x_imgs = x_reader.feed()
         self.y_imgs = y_reader.feed()
@@ -248,13 +249,13 @@ class Generator(object):
                 # conv: (N, H/2, W/2, C) -> (N, H/4, W/4, 2C)
                 output = tf_utils.conv2d(output, conv_dim, k_h=4, k_w=4, d_h=2, d_w=2, padding='SAME',
                                          name='conv{}_conv2d'.format(idx+1))
-                output = tf_utils.norm(output, _type='batch', _ops=self._ops, name='conv{}_norm'.format(idx+1))
+                output = tf_utils.norm(output, _type=self.norm, _ops=self._ops, name='conv{}_norm'.format(idx+1))
                 output = tf_utils.lrelu(output, name='conv{}_lrelu'.format(idx+1), is_print=True)
 
             for idx, deconv_dim in enumerate(self.deconv_dims):
                 # deconv: (N, H/16, W/16, C) -> (N, W/8, H/8, C/2)
                 output = tf_utils.deconv2d(output, deconv_dim, k_h=4, k_w=4, name='deconv{}_conv2d'.format(idx))
-                output = tf_utils.norm(output, _type='batch', _ops=self._ops, name='deconv{}_norm'.format(idx))
+                output = tf_utils.norm(output, _type=self.norm, _ops=self._ops, name='deconv{}_norm'.format(idx))
                 output = tf_utils.relu(output, name='deconv{}_relu'.format(idx), is_print=True)
 
             # conv: (N, H/2, W/2, 64) -> (N, W, H, 3)
@@ -288,7 +289,7 @@ class Discriminator(object):
                 # conv: (N, H/2, W/2, C) -> (N, H/4, W/4, C/2)
                 output = tf_utils.conv2d(output, hidden_dim, k_h=4, k_w=4, d_h=2, d_w=2, padding='SAME',
                                          name='conv{}_conv2d'.format(idx+1))
-                output = tf_utils.norm(output, _type='batch', _ops=self._ops, name='conv{}_norm'.format(idx+1))
+                output = tf_utils.norm(output, _type=self.norm, _ops=self._ops, name='conv{}_norm'.format(idx+1))
                 output = tf_utils.lrelu(output, name='conv{}_lrelu'.format(idx+1), is_print=True)
 
             # conv: (N, H/16, W/16, 512) -> (N, H/16, W/16, 1)
