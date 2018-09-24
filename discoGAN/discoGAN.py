@@ -20,7 +20,7 @@ from reader import Reader
 
 # noinspection PyPep8Naming
 class DiscoGAN(object):
-    def __init__(self, sess, flags, image_size, ori_image_size, data_path):
+    def __init__(self, sess, flags, image_size, data_path):
         self.sess = sess
         self.flags = flags
         self.image_size = image_size
@@ -172,10 +172,12 @@ class DiscoGAN(object):
                 Dx_loss, Dx_dis_loss, Dx_dis_reg], summary
 
     def sample_imgs(self):
+        num_imgs = np.amin([self.flags.batch_size, self.flags.sample_batch])
         x_val, y_val = self.sess.run([self.x_imgs, self.y_imgs])
+        x_val, y_val = x_val[:num_imgs], y_val[:num_imgs]
+
         fake_y, fake_x = self.sess.run([self.fake_y_sample, self.fake_x_sample],
                                        feed_dict={self.x_test_tfph: x_val, self.y_test_tfph: y_val})
-
         return [x_val, fake_y, y_val, fake_x]
 
     def test_step(self):
@@ -196,9 +198,9 @@ class DiscoGAN(object):
 
             utils.print_metrics(iter_time, ord_output)
 
-    def plots(self, imgs, iter_time, save_file, names=None):
+    def plots(self, imgs, iter_time, save_file):
         # parameters for plot size
-        scale, margin = 0.015, 0.02
+        scale, margin = 0.02, 0.02
         n_cols, n_rows = len(imgs), imgs[0].shape[0]
         cell_size_h, cell_size_w = imgs[0].shape[1] * scale, imgs[0].shape[2] * scale
 
@@ -207,7 +209,6 @@ class DiscoGAN(object):
         gs.update(wspace=margin, hspace=margin)
 
         imgs = [utils.inverse_transform(imgs[idx]) for idx in range(len(imgs))]
-
         # save more bigger image
         for col_index in range(n_cols):
             for row_index in range(n_rows):

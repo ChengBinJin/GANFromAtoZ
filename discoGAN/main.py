@@ -11,9 +11,9 @@ from solver import Solver
 FLAGS = tf.flags.FLAGS
 
 tf.flags.DEFINE_string('gpu_index', '0', 'gpu index if you have multiple gpus, default: 0')
-tf.flags.DEFINE_integer('batch_size', 200, 'batch size, default: 200')
+tf.flags.DEFINE_integer('batch_size', 32, 'batch size, default: 32')
 tf.flags.DEFINE_string('dataset', 'day2night', 'dataset name, default: day2night')
-tf.flags.DEFINE_bool('is_train', False, 'training or inference mode, default: True')
+tf.flags.DEFINE_bool('is_train', True, 'training or inference mode, default: True')
 
 tf.flags.DEFINE_float('learning_rate', 2e-4, 'initial learning rate for Adam, default: 0.0002')
 tf.flags.DEFINE_float('beta1', 0.5, 'beta1 momentum term of Adam, default: 0.5')
