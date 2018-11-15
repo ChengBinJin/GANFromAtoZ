@@ -37,7 +37,7 @@ This repository tries to generate synthetic night images using various GAN metho
 
 **VAE**
 <p align="center">
-<img src="https://user-images.githubusercontent.com/37034031/48538449-dac96d00-e8f7-11e8-8f53-eda0b74d7fbd.png" width=800>
+<img src="https://user-images.githubusercontent.com/37034031/48538606-41e72180-e8f8-11e8-9c0e-37f029400292.png" width=800>
 </p>
 
 **WGAN**
