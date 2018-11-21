@@ -12,7 +12,7 @@ import tensorflow as tf
 from datetime import datetime
 
 from dataset import Dataset
-# from wgan_gp import WGAN_GP
+from wgan_gp import WGAN_GP
 
 logger = logging.getLogger(__name__)  # logger
 logger.setLevel(logging.INFO)
@@ -30,7 +30,7 @@ class Solver(object):
         self._init_logger()
 
         self.dataset = Dataset(self.flags.dataset, self.flags, image_size=(128, 256, 3))
-        self.model = WGAN_GP(self.sess, self.flags, self.dataset.image_size, self.dataset())
+        self.model = WGAN_GP(self.sess, self.flags, self.dataset.image_size, self.dataset(), log_path=self.log_out_dir)
 
         self.saver = tf.train.Saver()
         self.sess.run(tf.global_variables_initializer())
@@ -91,7 +91,6 @@ class Solver(object):
             logger.info('print_freq: {}'.format(self.flags.print_freq))
             logger.info('save_freq: {}'.format(self.flags.save_freq))
             logger.info('sample_freq: {}'.format(self.flags.sample_freq))
-            logger.info('inception_freq: {}'.format(self.flags.inception_freq))
             logger.info('sample_batch: {}'.format(self.flags.sample_batch))
             logger.info('load_model: {}'.format(self.flags.load_model))
 
@@ -148,7 +147,7 @@ class Solver(object):
             start_time = time.time()
             imgs = self.model.sample_test()  # inference
             total_time += time.time() - start_time
-            self.model.plots(imgs, iter_time, self.test_out_dir)
+            self.model.plots_test(imgs, iter_time, self.test_out_dir)
 
         print('Avg PT: {:.2f} msec.'.format(total_time / num_iters * 1000.))
 
