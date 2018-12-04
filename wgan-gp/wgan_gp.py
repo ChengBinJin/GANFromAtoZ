@@ -260,7 +260,8 @@ class WGAN_GP(object):
 
         # parameters for plot size
         scale, margin = 0.02, 0.01
-        n_cols, n_rows = int(np.sqrt(len(imgs))), int(np.sqrt(len(imgs)))
+        n_rows = int(np.sqrt(len(imgs)))
+        n_cols = int(len(imgs) / n_rows)
         cell_size_h, cell_size_w = imgs[0].shape[0] * scale, imgs[0].shape[1] * scale
 
         fig = plt.figure(figsize=(cell_size_w * n_cols, cell_size_h * n_rows))  # (column, row)
