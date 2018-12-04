@@ -8,7 +8,8 @@ This repository tries to generate synthetic night images using various GAN metho
 - Pix2pix
 - Vanilla GAN  
 - VAE
-- WGAN
+- WGAN  
+- WGAM-GP
 
 **CycleGAN**
 <p align="center">
@@ -43,4 +44,9 @@ This repository tries to generate synthetic night images using various GAN metho
 **WGAN**
 <p align="center">
 <img src="https://user-images.githubusercontent.com/37034031/44076087-e0b52004-9fd9-11e8-8a61-8eede39b1777.png" width=800>
+</p>
+
+**WGAN-GP**
+<p align="center">
+<img src="https://user-images.githubusercontent.com/37034031/49414239-0a142100-f7b6-11e8-837a-09d93bb30fef.png" width=800>
 </p>
